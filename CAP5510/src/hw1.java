@@ -309,23 +309,27 @@ public class hw1 {
 			int vertical = matrix.getRowCol(row-1, col);
 			int horizontal = matrix.getRowCol(row, col-1);
 			if (diagonal == 0) {
+				//System.out.println("Diagonal: " + diagonal);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
 				col--;
 			}
 			else if (vertical == 0) {
+				//System.out.println("Vertical: " + vertical);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
 			}
 			else if (horizontal == 0) {
+				//System.out.println("Horizontal: " + horizontal);
 				sac.sequence1 = "-"+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
 			}
 			// Look at diagonal
 			else if (diagonal >= horizontal && diagonal >= vertical) {
+				//System.out.println("Diagonal: " + diagonal);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
@@ -333,12 +337,14 @@ public class hw1 {
 			}
 			// Look at vertical
 			else if (vertical >= diagonal && vertical >= horizontal) {
+				//System.out.println("Vertical: " + vertical);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
 			}
 			// Look at horizontal
 			else {
+				//System.out.println("Horizontal: " + horizontal);
 				sac.sequence1 = "-"+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
