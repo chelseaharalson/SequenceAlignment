@@ -1,5 +1,6 @@
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 import java.io.*;
 
@@ -136,7 +137,7 @@ public class hw1 {
 	}
 	
 	public static void globalAlignment() {
-		ArrayList<Matrix> matrix = new ArrayList<Matrix>();
+		//ArrayList<Matrix> matrix = new ArrayList<Matrix>();
 		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
@@ -172,7 +173,8 @@ public class hw1 {
 				System.out.println("Sequence2: " + sac.sequence2);*/
 			}
 		}
-		printOutput(sacList);
+		Collections.sort(sacList);
+		printOutput(sacList, ip.numNearestNeighbors);
 	}
 	
 	/*D(i,0) = Σ d(A(k),-), 0 <= k <= i
@@ -193,19 +195,10 @@ public class hw1 {
 			return matrix.getRowCol(row, col);
 		}
 		int mod = computeSimilarityScore(query.charAt(row-1), database.charAt(col-1));
-		/*int horizontal = globalAlignmentHelper(matrix, row-1, col, query, database) + ip.gapPenalty;
-		int vertical = globalAlignmentHelper(matrix, row, col-1, query, database) + ip.gapPenalty;
-		int diagonal = globalAlignmentHelper(matrix, row-1, col-1, query, database) + mod;*/
 		int horizontal = matrix.getRowCol(row-1, col) + ip.gapPenalty;
 		int vertical = matrix.getRowCol(row, col-1) + ip.gapPenalty;
 		int diagonal = matrix.getRowCol(row-1, col-1) + mod;
 		int max = Math.max(diagonal, Math.max(horizontal, vertical));
-		/*System.out.println("Row: " + row + " Col: " + col);
-		System.out.println("Horizontal: " + horizontal);
-		System.out.println("Vertical: " + vertical);
-		System.out.println("Diagonal: " + diagonal);
-		System.out.println("Max: " + max);
-		System.out.println();*/
 		matrix.setRowCol(row, col, max);
 		return max;
 	}
@@ -248,9 +241,12 @@ public class hw1 {
 		return sac;
 	}
 	
-	public static void printOutput(ArrayList<ScoreAlignmentSequence> sacList) {
+	public static void printOutput(ArrayList<ScoreAlignmentSequence> sacList, int k) {
 		int idCount = 1;
-		for (int i = 0; i < sacList.size(); i++) {
+		if (k > sacList.size()) {
+			k = sacList.size();
+		}
+		for (int i = 0; i < k; i++) {
 			System.out.println("Score = " + sacList.get(i).score);
 			System.out.println("id" + idCount+ " STARTPOS " + sacList.get(i).sequence1);
 			idCount++;
