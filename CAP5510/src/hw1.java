@@ -137,15 +137,27 @@ public class hw1 {
 	
 	public static void globalAlignment() {
 		ArrayList<Matrix> matrix = new ArrayList<Matrix>();
+		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
+				System.out.println("Using querylist: "+ i + " database list: " + j);
+				long startTime = System.currentTimeMillis();
 				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
 				for (int col = 0; col < m.getWidth(); col++) {
 					for (int row = 0; row < m.getHeight(); row++) {
+						//System.out.println("Calculating row: " + row + " column: " + col);
 						globalAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
 					}
 				}
-				for (int q = 0; q < ip.queryList.get(i).sequence.length(); q++) {
+				System.out.println("Matrix generated");
+				ScoreAlignmentSequence sac = backtrack(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
+				long endTime = System.currentTimeMillis();
+				sac.queryTime = endTime - startTime;
+				//matrix.add(m);	// add to matrix
+				System.out.println("Completed matrix");
+				sacList.add(sac);
+				
+				/*for (int q = 0; q < ip.queryList.get(i).sequence.length(); q++) {
 					System.out.print(ip.queryList.get(i).sequence.charAt(q));
 				}
 				System.out.println();
@@ -153,14 +165,14 @@ public class hw1 {
 					System.out.print(ip.databaseList.get(i).sequence.charAt(d));
 				}
 				System.out.println();
-				m.printMatrix();
-				ScoreAlignmentSequence sac = backtrack(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
-				System.out.println("Score: " + sac.score);
+				m.printMatrix();*/
+				
+				/*System.out.println("Score: " + sac.score);
 				System.out.println("Sequence1: " + sac.sequence1);
-				System.out.println("Sequence2: " + sac.sequence2);
-				matrix.add(m);	// add to matrix
+				System.out.println("Sequence2: " + sac.sequence2);*/
 			}
 		}
+		printOutput(sacList);
 	}
 	
 	/*D(i,0) = Σ d(A(k),-), 0 <= k <= i
@@ -181,9 +193,12 @@ public class hw1 {
 			return matrix.getRowCol(row, col);
 		}
 		int mod = computeSimilarityScore(query.charAt(row-1), database.charAt(col-1));
-		int horizontal = globalAlignmentHelper(matrix, row-1, col, query, database) + ip.gapPenalty;
+		/*int horizontal = globalAlignmentHelper(matrix, row-1, col, query, database) + ip.gapPenalty;
 		int vertical = globalAlignmentHelper(matrix, row, col-1, query, database) + ip.gapPenalty;
-		int diagonal = globalAlignmentHelper(matrix, row-1, col-1, query, database) + mod;
+		int diagonal = globalAlignmentHelper(matrix, row-1, col-1, query, database) + mod;*/
+		int horizontal = matrix.getRowCol(row-1, col) + ip.gapPenalty;
+		int vertical = matrix.getRowCol(row, col-1) + ip.gapPenalty;
+		int diagonal = matrix.getRowCol(row-1, col-1) + mod;
 		int max = Math.max(diagonal, Math.max(horizontal, vertical));
 		/*System.out.println("Row: " + row + " Col: " + col);
 		System.out.println("Horizontal: " + horizontal);
@@ -209,17 +224,16 @@ public class hw1 {
 		int col = matrix.getWidth()-1;
 		while (row > 0 || col > 0) {
 			sac.score += matrix.getRowCol(row, col);
-			int simScore = computeSimilarityScore(sequence1.charAt(row-1), sequence2.charAt(col-1));
 			// Look at diagonal
 			if (row > 0 && col > 0 && 
-					matrix.getRowCol(row, col) == (matrix.getRowCol(row-1, col-1)+simScore) ) {
+					matrix.getRowCol(row, col) == (matrix.getRowCol(row-1, col-1)+computeSimilarityScore(sequence1.charAt(row-1), sequence2.charAt(col-1))) ) {
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
 				col--;
 			}
 			// Look at vertical
-			else if (row > 0 && matrix.getRowCol(row, col) == matrix.getRowCol(row-1, col)+simScore) {
+			else if (row > 0 && matrix.getRowCol(row, col) == matrix.getRowCol(row-1, col)+ip.gapPenalty) {
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
@@ -232,6 +246,18 @@ public class hw1 {
 			}
 		}
 		return sac;
+	}
+	
+	public static void printOutput(ArrayList<ScoreAlignmentSequence> sacList) {
+		int idCount = 1;
+		for (int i = 0; i < sacList.size(); i++) {
+			System.out.println("Score = " + sacList.get(i).score);
+			System.out.println("id" + idCount+ " STARTPOS " + sacList.get(i).sequence1);
+			idCount++;
+			System.out.println("id" + idCount + " STARTPOS " + sacList.get(i).sequence2);
+			idCount++;
+			System.out.println("Total run time: " + sacList.get(i).queryTime + " ms");
+		}
 	}
 	
 	public static void localAlignment() {

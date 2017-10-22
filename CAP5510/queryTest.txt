@@ -1,2 +1,4 @@
 >hsa:100287010 no KO assigned | (RefSeq) uncharacterized LOC100287010 (N)
 gcatgc
+>hsa:100130899 no KO assigned | (RefSeq) uncharacterized LOC100130899 (N)
+aattcg

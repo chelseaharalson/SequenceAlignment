@@ -1,0 +1,10 @@
+>hsa:100287010 no KO assigned | (RefSeq) uncharacterized LOC100287010 (N)
+agcgtctccgcaggccagcgactctggaatcatttaccacagaatctgactgtcaactct
+ttgtcataaaaagatgcagatcttctccatgtgagaggctaagaggtacccagactgtgc
+ctagcatccttctcagaagagcaaga
+>hsa:100288846 no KO assigned | (RefSeq) uncharacterized LOC100288846 (N)
+cttaaaggggccggcgctctacctggcgaagccacccagccctggtagtggagaggcttg
+ggactagaggatgagattcggcctcatactccgcgctgtcgtgtgagccgcacaacccca
+aagaccagggctatgtcccaagggcacccgcctcgggcggccgcggtggcggcggcggcg
+agacttctcctagaggcgtctcggcgcaacccccacccccccgacccaggggccgacgcc
+aggcccagccccgacacccaaggctttc
