@@ -1,45 +1,51 @@
-import java.util.ArrayList;
-import java.util.Collections;
-
 public class Matrix {
-	ArrayList<ArrayList<Integer>> value;
+	Integer[][] val;
 	
 	public Matrix(int numRow, int numCol) {
-		value = new ArrayList<ArrayList<Integer>>();
-		for (int i = 0; i < numCol; i++) {
-			value.add(new ArrayList<Integer>(Collections.nCopies(numRow, 0)));
-			//System.out.println("Adding row: " + i + " col: " + numCol);
-			//System.out.println("Value size: " + value.get(i).size());
-		}
-		//System.out.println("getWidth: " + getWidth());
-		//System.out.println("getHeight: " + getHeight());
+		val = new Integer[numRow][numCol];
 	}
 	
 	public int getRowCol(int row, int col) {
-		return value.get(col).get(row);
+		return val[row][col];
 	}
 	
-	public void setRowCol(int row, int col, int val) {
-		value.get(col).set(row, val);
+	public void setRowCol(int row, int col, int pval) {
+		val[row][col] = pval;
 	}
 	
 	public int getWidth() {
-		return value.size();
+		if (val.length == 0) {
+			return 0;
+		}
+		return val[0].length;
 	}
 	
 	public int getHeight() {
-		if (value.isEmpty()) {
+		return val.length;
+	}
+	
+	public int getCols() {
+		if (val.length == 0) {
 			return 0;
 		}
-		return value.get(0).size();
+		return val[0].length;
+	}
+	
+	public int getRows() {
+		return val.length;
 	}
 	
 	public void printMatrix() {
-		for (int col = 0; col < getWidth(); col++) {
-			for (int row = 0; row < getHeight(); row++) {
-				System.out.print(getRowCol(row,col) + " ");
+		String rowCol = "";
+		for (int row = 0; row < getRows(); row++) {
+			for (int col = 0; col < getCols(); col++) {
+				//System.out.print(getRowCol(row,col) + " ");
+				rowCol += getRowCol(row,col) + " ";
+				System.out.println("row: " + row + " col: " + col + " value: " + getRowCol(row,col));
 			}
-			System.out.println();
+			//System.out.println();
+			rowCol += "\n";
 		}
+		System.out.println(rowCol);
 	}
 }

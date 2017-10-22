@@ -1,2 +1,2 @@
 >hsa:100130899 no KO assigned | (RefSeq) uncharacterized LOC100130899 (N)
-ggttgacta
+tgttacgg
