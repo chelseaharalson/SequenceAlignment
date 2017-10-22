@@ -6,8 +6,8 @@ public class Matrix {
 	
 	public Matrix(int numRow, int numCol) {
 		value = new ArrayList<ArrayList<Integer>>();
-		for (int i = 0; i < numRow; i++) {
-			value.add(new ArrayList<Integer>(Collections.nCopies(numCol, 0)));
+		for (int i = 0; i < numCol; i++) {
+			value.add(new ArrayList<Integer>(Collections.nCopies(numRow, 0)));
 			//System.out.println("Adding row: " + i + " col: " + numCol);
 			//System.out.println("Value size: " + value.get(i).size());
 		}
@@ -16,11 +16,11 @@ public class Matrix {
 	}
 	
 	public int getRowCol(int row, int col) {
-		return value.get(row).get(col);
+		return value.get(col).get(row);
 	}
 	
 	public void setRowCol(int row, int col, int val) {
-		value.get(row).set(col, val);
+		value.get(col).set(row, val);
 	}
 	
 	public int getWidth() {
@@ -35,9 +35,9 @@ public class Matrix {
 	}
 	
 	public void printMatrix() {
-		for (int i = 0; i < getWidth(); i++) {
-			for (int j = 0; j < getHeight(); j++) {
-				System.out.print(getRowCol(i,j));
+		for (int col = 0; col < getWidth(); col++) {
+			for (int row = 0; row < getHeight(); row++) {
+				System.out.print(getRowCol(row,col) + " ");
 			}
 			System.out.println();
 		}

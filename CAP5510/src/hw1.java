@@ -2,12 +2,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
-import java.math.*;
 
 public class hw1 {
+	static InputParameters ip = new InputParameters();
 	
 	public static void main (String[] args) throws ParseException {
-		InputParameters ip = new InputParameters();
+		
 		if (args.length > 0) {
 		    ip.alignmentMethod = Integer.parseInt(args[0]);
 		    ip.queryList = parseProtein(args[1]);
@@ -17,15 +17,15 @@ public class hw1 {
 		    ip.numNearestNeighbors = Integer.parseInt(args[5]);
 		    ip.gapPenalty = Integer.parseInt(args[6]);
 		}
-		boolean vi = validateInput(ip);
+		boolean vi = validateInput();
 		if (vi == false) {
 			System.out.println("Input invalid.");
 			System.exit(0);
 		}
-		/*for (int i = 0; i < ip.queryList.size(); i++) {
+		for (int i = 0; i < ip.queryList.size(); i++) {
 			System.out.println(ip.queryList.get(i).header);
 			System.out.println(ip.queryList.get(i).sequence);
-		}*/
+		}
 		for (int i = 0; i < ip.scoreList.size(); i++) {
 			for (int j = 0; j < ip.scoreList.get(i).size(); j++) {
 				System.out.print(ip.scoreList.get(i).get(j) + " ");
@@ -34,13 +34,13 @@ public class hw1 {
 		}
 		
 		if (ip.alignmentMethod == 1) {
-			globalAlignment(ip);
+			globalAlignment();
 		}
 		else if (ip.alignmentMethod == 2) {
-			localAlignment(ip);
+			localAlignment();
 		}
 		else if (ip.alignmentMethod == 3) {
-			dovetailAlignment(ip);
+			dovetailAlignment();
 		}
 		else {
 			System.out.println("Please select a number from 1-3.");
@@ -69,7 +69,7 @@ public class hw1 {
         return fileContent;
     }
 	
-	public static boolean validateInput(InputParameters ip) {
+	public static boolean validateInput() {
 		boolean inputValid = false;
 		if (!ip.queryList.isEmpty() && !ip.databaseList.isEmpty() && ip.fileAlphabet.length() != 0 && ip.scoreList.size() != 0) {
 			inputValid = true;
@@ -135,20 +135,16 @@ public class hw1 {
         return matrix;
 	}
 	
-	public static void globalAlignment(InputParameters ip) {
+	public static void globalAlignment() {
 		ArrayList<Matrix> matrix = new ArrayList<Matrix>();
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
 				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
-				for (int x = 0; x < m.getWidth(); x++) {
-					if (x == 0) {
-						for (int y = 0; y < m.getHeight(); y++) {
-							m.setRowCol(x, y, y);
-						}
+				for (int col = 0; col < m.getWidth(); col++) {
+					for (int row = 0; row < m.getHeight(); row++) {
+						globalAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
 					}
-					m.setRowCol(x, 0, x);
 				}
-				//m.printMatrix();
 				for (int q = 0; q < ip.queryList.get(i).sequence.length(); q++) {
 					System.out.print(ip.queryList.get(i).sequence.charAt(q));
 				}
@@ -157,7 +153,6 @@ public class hw1 {
 					System.out.print(ip.databaseList.get(i).sequence.charAt(d));
 				}
 				System.out.println();
-				globalAlignmentHelper(m, m.getWidth()-1, m.getHeight()-1, ip.databaseList.get(i).sequence, ip.queryList.get(i).sequence);		// loops through every query to the database
 				m.printMatrix();
 				matrix.add(m);	// add to matrix
 			}
@@ -171,26 +166,44 @@ public class hw1 {
 	D(i,j-1) + d(-,B(j)),
 	D(i-1,j-1) + d(A(i),B(j))}*/
 	public static int globalAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
-		if (col == 0 || row == 0) {
+		if (col == 0) {
+			matrix.setRowCol(row, col, row*ip.gapPenalty);
+			//System.out.println("row: " + row + " col: " + col + " val: " + row*ip.gapPenalty);
 			return matrix.getRowCol(row, col);
 		}
-		int mod = 1;
-		if (query.charAt(row-1) == database.charAt(col-1)) {	// diagonal match
-			mod = 0;
+		if (row == 0) {
+			matrix.setRowCol(row, col, col*ip.gapPenalty);
+			//System.out.println("row: " + row + " col: " + col + " val: " + col*ip.gapPenalty);
+			return matrix.getRowCol(row, col);
 		}
-		int horizontal = globalAlignmentHelper(matrix, row-1, col, query, database) + 1;
-		int vertical = globalAlignmentHelper(matrix, row, col-1, query, database) + 1;
+		int mod = computeSimilarityScore(query.charAt(row-1), database.charAt(col-1));
+		int horizontal = globalAlignmentHelper(matrix, row-1, col, query, database) + ip.gapPenalty;
+		int vertical = globalAlignmentHelper(matrix, row, col-1, query, database) + ip.gapPenalty;
 		int diagonal = globalAlignmentHelper(matrix, row-1, col-1, query, database) + mod;
-		int min = Math.min(diagonal, Math.min(horizontal, vertical));
-		matrix.setRowCol(row, col, min);
-		return min;
+		int max = Math.max(diagonal, Math.max(horizontal, vertical));
+		/*System.out.println("Row: " + row + " Col: " + col);
+		System.out.println("Horizontal: " + horizontal);
+		System.out.println("Vertical: " + vertical);
+		System.out.println("Diagonal: " + diagonal);
+		System.out.println("Max: " + max);
+		System.out.println();*/
+		matrix.setRowCol(row, col, max);
+		return max;
 	}
 	
-	public static void localAlignment(InputParameters ip) {
+	public static int computeSimilarityScore(char char1, char char2) {
+		int idx1 = ip.fileAlphabet.toLowerCase().indexOf(char1);
+		int idx2 = ip.fileAlphabet.toLowerCase().indexOf(char2);
+		//int score = ip.scoreList.get(idx1).get(idx2);
+		//System.out.println("Comparing char1: " + char1 + " and char2: " + char2 + " with Score: " + score);
+		return ip.scoreList.get(idx1).get(idx2);
+	}
+	
+	public static void localAlignment() {
 		
 	}
 	
-	public static void dovetailAlignment(InputParameters ip) {
+	public static void dovetailAlignment() {
 		
 	}
 }
