@@ -154,6 +154,10 @@ public class hw1 {
 				}
 				System.out.println();
 				m.printMatrix();
+				ScoreAlignmentSequence sac = backtrack(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
+				System.out.println("Score: " + sac.score);
+				System.out.println("Sequence1: " + sac.sequence1);
+				System.out.println("Sequence2: " + sac.sequence2);
 				matrix.add(m);	// add to matrix
 			}
 		}
@@ -161,7 +165,7 @@ public class hw1 {
 	
 	/*D(i,0) = Σ d(A(k),-), 0 <= k <= i
 	D(0,j) = Σ d(-,B(k)), 0 <= k <= j
-	D(i,j) = Min  {
+	D(i,j) = Max  {
 	D(i-1,j) + d(A(i),-), 
 	D(i,j-1) + d(-,B(j)),
 	D(i-1,j-1) + d(A(i),B(j))}*/
@@ -197,6 +201,37 @@ public class hw1 {
 		//int score = ip.scoreList.get(idx1).get(idx2);
 		//System.out.println("Comparing char1: " + char1 + " and char2: " + char2 + " with Score: " + score);
 		return ip.scoreList.get(idx1).get(idx2);
+	}
+	
+	public static ScoreAlignmentSequence backtrack(Matrix matrix, String sequence1, String sequence2) {
+		ScoreAlignmentSequence sac = new ScoreAlignmentSequence();
+		int row = matrix.getHeight()-1;
+		int col = matrix.getWidth()-1;
+		while (row > 0 || col > 0) {
+			sac.score += matrix.getRowCol(row, col);
+			int simScore = computeSimilarityScore(sequence1.charAt(row-1), sequence2.charAt(col-1));
+			// Look at diagonal
+			if (row > 0 && col > 0 && 
+					matrix.getRowCol(row, col) == (matrix.getRowCol(row-1, col-1)+simScore) ) {
+				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
+				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
+				row--;
+				col--;
+			}
+			// Look at vertical
+			else if (row > 0 && matrix.getRowCol(row, col) == matrix.getRowCol(row-1, col)+simScore) {
+				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
+				sac.sequence2 = "-"+sac.sequence2;
+				row--;
+			}
+			// Look at horizontal
+			else {
+				sac.sequence1 = "-"+sac.sequence1;
+				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
+				col--;
+			}
+		}
+		return sac;
 	}
 	
 	public static void localAlignment() {
