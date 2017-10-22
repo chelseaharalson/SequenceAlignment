@@ -13,17 +13,6 @@ public class Matrix {
 		val[row][col] = pval;
 	}
 	
-	public int getWidth() {
-		if (val.length == 0) {
-			return 0;
-		}
-		return val[0].length;
-	}
-	
-	public int getHeight() {
-		return val.length;
-	}
-	
 	public int getCols() {
 		if (val.length == 0) {
 			return 0;

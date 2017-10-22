@@ -143,8 +143,8 @@ public class hw1 {
 				System.out.println("Using querylist: "+ i + " database list: " + j);
 				long startTime = System.currentTimeMillis();
 				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
-				for (int col = 0; col < m.getWidth(); col++) {
-					for (int row = 0; row < m.getHeight(); row++) {
+				for (int col = 0; col < m.getCols(); col++) {
+					for (int row = 0; row < m.getRows(); row++) {
 						//System.out.println("Calculating row: " + row + " column: " + col);
 						globalAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
 					}
@@ -197,8 +197,8 @@ public class hw1 {
 	
 	public static ScoreAlignmentSequence backtrackGlobal(Matrix matrix, String sequence1, String sequence2) {
 		ScoreAlignmentSequence sac = new ScoreAlignmentSequence();
-		int row = matrix.getHeight()-1;
-		int col = matrix.getWidth()-1;
+		int row = matrix.getRows()-1;
+		int col = matrix.getCols()-1;
 		while (row > 0 || col > 0) {
 			sac.score += matrix.getRowCol(row, col);
 			// Look at diagonal
@@ -232,9 +232,9 @@ public class hw1 {
 		}
 		for (int i = 0; i < k; i++) {
 			System.out.println("Score = " + sacList.get(i).score);
-			System.out.println("id" + idCount+ " STARTPOS " + sacList.get(i).sequence1);
+			System.out.println("id" + idCount + " " + sacList.get(i).startPosSeq1 + " " + sacList.get(i).sequence1);
 			idCount++;
-			System.out.println("id" + idCount + " STARTPOS " + sacList.get(i).sequence2);
+			System.out.println("id" + idCount + " " + sacList.get(i).startPosSeq2 + " " + sacList.get(i).sequence2);
 			idCount++;
 			System.out.println("Total run time: " + sacList.get(i).queryTime + " ms");
 		}
@@ -250,8 +250,8 @@ public class hw1 {
 				System.out.println("Using querylist: "+ i + " database list: " + j);
 				long startTime = System.currentTimeMillis();
 				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
-				for (int col = 0; col < m.getWidth(); col++) {
-					for (int row = 0; row < m.getHeight(); row++) {
+				for (int col = 0; col < m.getCols(); col++) {
+					for (int row = 0; row < m.getRows(); row++) {
 						//System.out.println("Calculating row: " + row + " column: " + col);
 						localAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
 						if (m.getRowCol(row, col) > max) {
@@ -303,33 +303,35 @@ public class hw1 {
 		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col));
 		while (row > 0 || col > 0) {
 			if (matrix.getRowCol(row, col) == 0) {
+				sac.startPosSeq1 = col;
+				sac.startPosSeq2 = row;
 				return sac;
 			}
 			int diagonal = matrix.getRowCol(row-1, col-1);
 			int vertical = matrix.getRowCol(row-1, col);
 			int horizontal = matrix.getRowCol(row, col-1);
 			if (diagonal == 0) {
-				//System.out.println("Diagonal: " + diagonal);
+				System.out.println("Diagonal: " + diagonal);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
 				col--;
 			}
 			else if (vertical == 0) {
-				//System.out.println("Vertical: " + vertical);
+				System.out.println("Vertical: " + vertical);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
 			}
 			else if (horizontal == 0) {
-				//System.out.println("Horizontal: " + horizontal);
+				System.out.println("Horizontal: " + horizontal);
 				sac.sequence1 = "-"+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
 			}
 			// Look at diagonal
 			else if (diagonal >= horizontal && diagonal >= vertical) {
-				//System.out.println("Diagonal: " + diagonal);
+				System.out.println("Diagonal: " + diagonal);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
@@ -337,14 +339,14 @@ public class hw1 {
 			}
 			// Look at vertical
 			else if (vertical >= diagonal && vertical >= horizontal) {
-				//System.out.println("Vertical: " + vertical);
+				System.out.println("Vertical: " + vertical);
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
 			}
 			// Look at horizontal
 			else {
-				//System.out.println("Horizontal: " + horizontal);
+				System.out.println("Horizontal: " + horizontal);
 				sac.sequence1 = "-"+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
@@ -354,6 +356,117 @@ public class hw1 {
 	}
 	
 	public static void dovetailAlignment() {
-		
+		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
+		int max = 0;
+		int r = 0;
+		int c = 0;
+		for (int i = 0; i < ip.queryList.size(); i++) {
+			for (int j = 0; j < ip.databaseList.size(); j++) {
+				System.out.println("Using querylist: "+ i + " database list: " + j);
+				long startTime = System.currentTimeMillis();
+				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
+				for (int col = 0; col < m.getCols(); col++) {
+					for (int row = 0; row < m.getRows(); row++) {
+						//System.out.println("Calculating row: " + row + " column: " + col);
+						dovetailAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
+						if ( (row == m.getRows()-1 || col == m.getCols()-1) && m.getRowCol(row, col) > max ) {
+							max = m.getRowCol(row, col);
+							r = row;
+							c = col;
+						}
+					}
+				}
+				System.out.println("Matrix generated");
+				System.out.println("Max: " + max + " row: " + r + " col: " + c);
+				m.printMatrix();
+				ScoreAlignmentSequence sac = backtrackDovetail(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence, r, c);
+				sac.score = max;
+				long endTime = System.currentTimeMillis();
+				sac.queryTime = endTime - startTime;
+				System.out.println("Completed matrix");
+				sacList.add(sac);
+			}
+		}
+		Collections.sort(sacList);
+		printOutput(sacList, ip.numNearestNeighbors);
+	}
+	
+	public static int dovetailAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
+		if (col == 0) {
+			matrix.setRowCol(row, 0, 0);
+			return matrix.getRowCol(row, col);
+		}
+		if (row == 0) {
+			matrix.setRowCol(0, col, 0);
+			return matrix.getRowCol(row, col);
+		}
+		int mod = computeSimilarityScore(query.charAt(row-1), database.charAt(col-1));
+		int horizontal = matrix.getRowCol(row, col-1) + ip.gapPenalty;
+		int vertical = matrix.getRowCol(row-1, col) + ip.gapPenalty;
+		int diagonal = matrix.getRowCol(row-1, col-1) + mod;
+		int max = Math.max(diagonal, Math.max(horizontal, vertical));
+		matrix.setRowCol(row, col, max);
+		//System.out.println("Setting row: " + row + " col: " + col + " value: " + max);
+		//System.out.println("Horizontal: " + horizontal + " Vertical: " + vertical + " Diagonal: " + diagonal);
+		return max;
+	}
+	
+	public static ScoreAlignmentSequence backtrackDovetail(Matrix matrix, String sequence1, String sequence2, int startRow, int startCol) {
+		ScoreAlignmentSequence sac = new ScoreAlignmentSequence();
+		int row = startRow;
+		int col = startCol;
+		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col));
+		while (row > 0 || col > 0) {
+			if (matrix.getRowCol(row, col) == 0) {
+				sac.startPosSeq1 = col;
+				sac.startPosSeq2 = row;
+				return sac;
+			}
+			int diagonal = matrix.getRowCol(row-1, col-1);
+			int vertical = matrix.getRowCol(row-1, col);
+			int horizontal = matrix.getRowCol(row, col-1);
+			if (diagonal == 0) {
+				System.out.println("Diagonal: " + diagonal);
+				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
+				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
+				row--;
+				col--;
+			}
+			else if (vertical == 0) {
+				System.out.println("Vertical: " + vertical);
+				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
+				sac.sequence2 = "-"+sac.sequence2;
+				row--;
+			}
+			else if (horizontal == 0) {
+				System.out.println("Horizontal: " + horizontal);
+				sac.sequence1 = "-"+sac.sequence1;
+				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
+				col--;
+			}
+			// Look at diagonal
+			else if (diagonal >= horizontal && diagonal >= vertical) {
+				System.out.println("Diagonal: " + diagonal);
+				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
+				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
+				row--;
+				col--;
+			}
+			// Look at vertical
+			else if (vertical >= diagonal && vertical >= horizontal) {
+				System.out.println("Vertical: " + vertical);
+				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
+				sac.sequence2 = "-"+sac.sequence2;
+				row--;
+			}
+			// Look at horizontal
+			else {
+				System.out.println("Horizontal: " + horizontal);
+				sac.sequence1 = "-"+sac.sequence1;
+				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
+				col--;
+			}
+		}
+		return sac;
 	}
 }
