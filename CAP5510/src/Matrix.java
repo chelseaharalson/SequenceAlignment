@@ -1,27 +1,41 @@
 public class Matrix {
-	Integer[][] val;
+	MatrixElement[][] matrix;
 	
 	public Matrix(int numRow, int numCol) {
-		val = new Integer[numRow][numCol];
+		matrix = new MatrixElement[numRow][numCol];
+		for (int row = 0; row < getRows(); row++) {
+			for (int col = 0; col < getCols(); col++) {
+				matrix[row][col] = new MatrixElement();
+			}
+		}
 	}
 	
-	public int getRowCol(int row, int col) {
-		return val[row][col];
+	public MatrixElement getRowCol(int row, int col) {
+		return matrix[row][col];
 	}
 	
 	public void setRowCol(int row, int col, int pval) {
-		val[row][col] = pval;
+		matrix[row][col].val = pval;
+	}
+	
+	public void setRowCol(int row, int col, Direction d) {
+		matrix[row][col].direction = d;
+	}
+	
+	public void setRowCol(int row, int col, int pval, Direction d) {
+		matrix[row][col].val = pval;
+		matrix[row][col].direction = d;
 	}
 	
 	public int getCols() {
-		if (val.length == 0) {
+		if (matrix.length == 0) {
 			return 0;
 		}
-		return val[0].length;
+		return matrix[0].length;
 	}
 	
 	public int getRows() {
-		return val.length;
+		return matrix.length;
 	}
 	
 	public void printMatrix() {
@@ -29,8 +43,8 @@ public class Matrix {
 		for (int row = 0; row < getRows(); row++) {
 			for (int col = 0; col < getCols(); col++) {
 				//System.out.print(getRowCol(row,col) + " ");
-				rowCol += getRowCol(row,col) + " ";
-				System.out.println("row: " + row + " col: " + col + " value: " + getRowCol(row,col));
+				rowCol += getRowCol(row,col).val + " ";
+				System.out.println("row: " + row + " col: " + col + " value: " + getRowCol(row,col).val);
 			}
 			//System.out.println();
 			rowCol += "\n";

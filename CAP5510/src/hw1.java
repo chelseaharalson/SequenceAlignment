@@ -150,7 +150,9 @@ public class hw1 {
 					}
 				}
 				System.out.println("Matrix generated");
+				m.printMatrix();
 				ScoreAlignmentSequence sac = backtrackGlobal(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
+				sac.score = m.getRowCol(m.getRows()-1, m.getCols()-1).val;
 				long endTime = System.currentTimeMillis();
 				sac.queryTime = endTime - startTime;
 				System.out.println("Completed matrix");
@@ -171,19 +173,30 @@ public class hw1 {
 		if (col == 0) {
 			matrix.setRowCol(row, col, row*ip.gapPenalty);
 			//System.out.println("row: " + row + " col: " + col + " val: " + row*ip.gapPenalty);
-			return matrix.getRowCol(row, col);
+			return matrix.getRowCol(row, col).val;
 		}
 		if (row == 0) {
 			matrix.setRowCol(row, col, col*ip.gapPenalty);
 			//System.out.println("row: " + row + " col: " + col + " val: " + col*ip.gapPenalty);
-			return matrix.getRowCol(row, col);
+			return matrix.getRowCol(row, col).val;
 		}
 		int mod = computeSimilarityScore(query.charAt(row-1), database.charAt(col-1));
-		int horizontal = matrix.getRowCol(row, col-1) + ip.gapPenalty;
-		int vertical = matrix.getRowCol(row-1, col) + ip.gapPenalty;
-		int diagonal = matrix.getRowCol(row-1, col-1) + mod;
+		int horizontal = matrix.getRowCol(row, col-1).val + ip.gapPenalty;
+		int vertical = matrix.getRowCol(row-1, col).val + ip.gapPenalty;
+		int diagonal = matrix.getRowCol(row-1, col-1).val + mod;
 		int max = Math.max(diagonal, Math.max(horizontal, vertical));
-		matrix.setRowCol(row, col, max);
+		if (max == diagonal) {
+			matrix.setRowCol(row, col, max, Direction.DIAGONAL);
+		}
+		else if (max == vertical) {
+			matrix.setRowCol(row, col, max, Direction.VERTICAL);
+		}
+		else if (max == horizontal) {
+			matrix.setRowCol(row, col, max, Direction.HORIZONTAL);
+		}
+		else {
+			matrix.setRowCol(row, col, max);
+		}
 		return max;
 	}
 	
@@ -200,23 +213,26 @@ public class hw1 {
 		int row = matrix.getRows()-1;
 		int col = matrix.getCols()-1;
 		while (row > 0 || col > 0) {
-			sac.score += matrix.getRowCol(row, col);
-			// Look at diagonal
-			if (row > 0 && col > 0 && 
-					matrix.getRowCol(row, col) == (matrix.getRowCol(row-1, col-1)+computeSimilarityScore(sequence1.charAt(row-1), sequence2.charAt(col-1))) ) {
+			if (row == 0 && col == 0) {
+				sac.startPosSeq1 = col;
+				sac.startPosSeq2 = row;
+				return sac;
+			}
+			if (matrix.getRowCol(row, col).direction == Direction.DIAGONAL) {
+				//System.out.println("Diagonal");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
 				col--;
 			}
-			// Look at vertical
-			else if (row > 0 && matrix.getRowCol(row, col) == matrix.getRowCol(row-1, col)+ip.gapPenalty) {
+			else if (matrix.getRowCol(row, col).direction == Direction.VERTICAL) {
+				//System.out.println("Vertical");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
 			}
-			// Look at horizontal
-			else {
+			else if (matrix.getRowCol(row, col).direction == Direction.HORIZONTAL) {
+				//System.out.println("Horizontal");
 				sac.sequence1 = "-"+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
@@ -254,8 +270,8 @@ public class hw1 {
 					for (int row = 0; row < m.getRows(); row++) {
 						//System.out.println("Calculating row: " + row + " column: " + col);
 						localAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
-						if (m.getRowCol(row, col) > max) {
-							max = m.getRowCol(row, col);
+						if (m.getRowCol(row, col).val > max) {
+							max = m.getRowCol(row, col).val;
 							r = row;
 							c = col;
 						}
@@ -279,18 +295,29 @@ public class hw1 {
 	public static int localAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
 		if (col == 0) {
 			matrix.setRowCol(row, 0, 0);
-			return matrix.getRowCol(row, col);
+			return matrix.getRowCol(row, col).val;
 		}
 		if (row == 0) {
 			matrix.setRowCol(0, col, 0);
-			return matrix.getRowCol(row, col);
+			return matrix.getRowCol(row, col).val;
 		}
 		int mod = computeSimilarityScore(query.charAt(row-1), database.charAt(col-1));
-		int horizontal = matrix.getRowCol(row, col-1) + ip.gapPenalty;
-		int vertical = matrix.getRowCol(row-1, col) + ip.gapPenalty;
-		int diagonal = matrix.getRowCol(row-1, col-1) + mod;
+		int horizontal = matrix.getRowCol(row, col-1).val + ip.gapPenalty;
+		int vertical = matrix.getRowCol(row-1, col).val + ip.gapPenalty;
+		int diagonal = matrix.getRowCol(row-1, col-1).val + mod;
 		int max = Math.max(0, Math.max(diagonal, Math.max(horizontal, vertical)));
-		matrix.setRowCol(row, col, max);
+		if (max == diagonal) {
+			matrix.setRowCol(row, col, max, Direction.DIAGONAL);
+		}
+		else if (max == vertical) {
+			matrix.setRowCol(row, col, max, Direction.VERTICAL);
+		}
+		else if (max == horizontal) {
+			matrix.setRowCol(row, col, max, Direction.HORIZONTAL);
+		}
+		else {
+			matrix.setRowCol(row, col, max);
+		}
 		//System.out.println("Setting row: " + row + " col: " + col + " value: " + max);
 		//System.out.println("Horizontal: " + horizontal + " Vertical: " + vertical + " Diagonal: " + diagonal);
 		return max;
@@ -302,51 +329,26 @@ public class hw1 {
 		int col = startCol;
 		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col));
 		while (row > 0 || col > 0) {
-			if (matrix.getRowCol(row, col) == 0) {
+			if (matrix.getRowCol(row, col).val == 0 || matrix.getRowCol(row, col).direction == Direction.NONE) {
 				sac.startPosSeq1 = col;
 				sac.startPosSeq2 = row;
 				return sac;
 			}
-			int diagonal = matrix.getRowCol(row-1, col-1);
-			int vertical = matrix.getRowCol(row-1, col);
-			int horizontal = matrix.getRowCol(row, col-1);
-			if (diagonal == 0) {
-				System.out.println("Diagonal: " + diagonal);
+			if (matrix.getRowCol(row, col).direction == Direction.DIAGONAL) {
+				//System.out.println("Diagonal");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
 				col--;
 			}
-			else if (vertical == 0) {
-				System.out.println("Vertical: " + vertical);
+			else if (matrix.getRowCol(row, col).direction == Direction.VERTICAL) {
+				//System.out.println("Vertical");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
 			}
-			else if (horizontal == 0) {
-				System.out.println("Horizontal: " + horizontal);
-				sac.sequence1 = "-"+sac.sequence1;
-				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
-				col--;
-			}
-			// Look at diagonal
-			else if (diagonal >= horizontal && diagonal >= vertical) {
-				System.out.println("Diagonal: " + diagonal);
-				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
-				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
-				row--;
-				col--;
-			}
-			// Look at vertical
-			else if (vertical >= diagonal && vertical >= horizontal) {
-				System.out.println("Vertical: " + vertical);
-				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
-				sac.sequence2 = "-"+sac.sequence2;
-				row--;
-			}
-			// Look at horizontal
-			else {
-				System.out.println("Horizontal: " + horizontal);
+			else if (matrix.getRowCol(row, col).direction == Direction.HORIZONTAL) {
+				//System.out.println("Horizontal");
 				sac.sequence1 = "-"+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
@@ -369,8 +371,8 @@ public class hw1 {
 					for (int row = 0; row < m.getRows(); row++) {
 						//System.out.println("Calculating row: " + row + " column: " + col);
 						dovetailAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
-						if ( (row == m.getRows()-1 || col == m.getCols()-1) && m.getRowCol(row, col) > max ) {
-							max = m.getRowCol(row, col);
+						if ( (row == m.getRows()-1 || col == m.getCols()-1) && m.getRowCol(row, col).val > max ) {
+							max = m.getRowCol(row, col).val;
 							r = row;
 							c = col;
 						}
@@ -394,20 +396,29 @@ public class hw1 {
 	public static int dovetailAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
 		if (col == 0) {
 			matrix.setRowCol(row, 0, 0);
-			return matrix.getRowCol(row, col);
+			return matrix.getRowCol(row, col).val;
 		}
 		if (row == 0) {
 			matrix.setRowCol(0, col, 0);
-			return matrix.getRowCol(row, col);
+			return matrix.getRowCol(row, col).val;
 		}
 		int mod = computeSimilarityScore(query.charAt(row-1), database.charAt(col-1));
-		int horizontal = matrix.getRowCol(row, col-1) + ip.gapPenalty;
-		int vertical = matrix.getRowCol(row-1, col) + ip.gapPenalty;
-		int diagonal = matrix.getRowCol(row-1, col-1) + mod;
+		int horizontal = matrix.getRowCol(row, col-1).val + ip.gapPenalty;
+		int vertical = matrix.getRowCol(row-1, col).val + ip.gapPenalty;
+		int diagonal = matrix.getRowCol(row-1, col-1).val + mod;
 		int max = Math.max(diagonal, Math.max(horizontal, vertical));
-		matrix.setRowCol(row, col, max);
-		//System.out.println("Setting row: " + row + " col: " + col + " value: " + max);
-		//System.out.println("Horizontal: " + horizontal + " Vertical: " + vertical + " Diagonal: " + diagonal);
+		if (max == diagonal) {
+			matrix.setRowCol(row, col, max, Direction.DIAGONAL);
+		}
+		else if (max == vertical) {
+			matrix.setRowCol(row, col, max, Direction.VERTICAL);
+		}
+		else if (max == horizontal) {
+			matrix.setRowCol(row, col, max, Direction.HORIZONTAL);
+		}
+		else {
+			matrix.setRowCol(row, col, max);
+		}
 		return max;
 	}
 	
@@ -417,51 +428,28 @@ public class hw1 {
 		int col = startCol;
 		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col));
 		while (row > 0 || col > 0) {
-			if (matrix.getRowCol(row, col) == 0) {
+			if (row == 0 || col == 0) {
+				sac.sequence1 = sequence1.charAt(row)+sac.sequence1;
+				sac.sequence2 = sequence2.charAt(col)+sac.sequence2;
 				sac.startPosSeq1 = col;
 				sac.startPosSeq2 = row;
 				return sac;
 			}
-			int diagonal = matrix.getRowCol(row-1, col-1);
-			int vertical = matrix.getRowCol(row-1, col);
-			int horizontal = matrix.getRowCol(row, col-1);
-			if (diagonal == 0) {
-				System.out.println("Diagonal: " + diagonal);
+			if (matrix.getRowCol(row, col).direction == Direction.DIAGONAL) {
+				System.out.println("Diagonal");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
 				col--;
 			}
-			else if (vertical == 0) {
-				System.out.println("Vertical: " + vertical);
+			else if (matrix.getRowCol(row, col).direction == Direction.VERTICAL) {
+				System.out.println("Vertical");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = "-"+sac.sequence2;
 				row--;
 			}
-			else if (horizontal == 0) {
-				System.out.println("Horizontal: " + horizontal);
-				sac.sequence1 = "-"+sac.sequence1;
-				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
-				col--;
-			}
-			// Look at diagonal
-			else if (diagonal >= horizontal && diagonal >= vertical) {
-				System.out.println("Diagonal: " + diagonal);
-				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
-				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
-				row--;
-				col--;
-			}
-			// Look at vertical
-			else if (vertical >= diagonal && vertical >= horizontal) {
-				System.out.println("Vertical: " + vertical);
-				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
-				sac.sequence2 = "-"+sac.sequence2;
-				row--;
-			}
-			// Look at horizontal
-			else {
-				System.out.println("Horizontal: " + horizontal);
+			else if (matrix.getRowCol(row, col).direction == Direction.HORIZONTAL) {
+				System.out.println("Horizontal");
 				sac.sequence1 = "-"+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
