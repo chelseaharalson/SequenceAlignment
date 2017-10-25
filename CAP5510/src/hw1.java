@@ -214,8 +214,8 @@ public class hw1 {
 		int col = matrix.getCols()-1;
 		while (row > 0 || col > 0) {
 			if (row == 0 && col == 0) {
-				sac.startPosSeq1 = col;
-				sac.startPosSeq2 = row;
+				sac.startPosSeq1 = row;
+				sac.startPosSeq2 = col;
 				return sac;
 			}
 			if (matrix.getRowCol(row, col).direction == Direction.DIAGONAL) {
@@ -228,12 +228,12 @@ public class hw1 {
 			else if (matrix.getRowCol(row, col).direction == Direction.VERTICAL) {
 				//System.out.println("Vertical");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
-				sac.sequence2 = "-"+sac.sequence2;
+				sac.sequence2 = "."+sac.sequence2;
 				row--;
 			}
 			else if (matrix.getRowCol(row, col).direction == Direction.HORIZONTAL) {
 				//System.out.println("Horizontal");
-				sac.sequence1 = "-"+sac.sequence1;
+				sac.sequence1 = "."+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
 			}
@@ -330,8 +330,8 @@ public class hw1 {
 		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col));
 		while (row > 0 || col > 0) {
 			if (matrix.getRowCol(row, col).val == 0 || matrix.getRowCol(row, col).direction == Direction.NONE) {
-				sac.startPosSeq1 = col;
-				sac.startPosSeq2 = row;
+				sac.startPosSeq1 = row;
+				sac.startPosSeq2 = col;
 				return sac;
 			}
 			if (matrix.getRowCol(row, col).direction == Direction.DIAGONAL) {
@@ -344,12 +344,12 @@ public class hw1 {
 			else if (matrix.getRowCol(row, col).direction == Direction.VERTICAL) {
 				//System.out.println("Vertical");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
-				sac.sequence2 = "-"+sac.sequence2;
+				sac.sequence2 = "."+sac.sequence2;
 				row--;
 			}
 			else if (matrix.getRowCol(row, col).direction == Direction.HORIZONTAL) {
 				//System.out.println("Horizontal");
-				sac.sequence1 = "-"+sac.sequence1;
+				sac.sequence1 = "."+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
 			}
@@ -429,28 +429,26 @@ public class hw1 {
 		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col));
 		while (row > 0 || col > 0) {
 			if (row == 0 || col == 0) {
-				sac.sequence1 = sequence1.charAt(row)+sac.sequence1;
-				sac.sequence2 = sequence2.charAt(col)+sac.sequence2;
-				sac.startPosSeq1 = col;
-				sac.startPosSeq2 = row;
+				sac.startPosSeq1 = row;
+				sac.startPosSeq2 = col;
 				return sac;
 			}
 			if (matrix.getRowCol(row, col).direction == Direction.DIAGONAL) {
-				System.out.println("Diagonal");
+				//System.out.println("Diagonal");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				row--;
 				col--;
 			}
 			else if (matrix.getRowCol(row, col).direction == Direction.VERTICAL) {
-				System.out.println("Vertical");
+				//System.out.println("Vertical");
 				sac.sequence1 = sequence1.charAt(row-1)+sac.sequence1;
-				sac.sequence2 = "-"+sac.sequence2;
+				sac.sequence2 = "."+sac.sequence2;
 				row--;
 			}
 			else if (matrix.getRowCol(row, col).direction == Direction.HORIZONTAL) {
-				System.out.println("Horizontal");
-				sac.sequence1 = "-"+sac.sequence1;
+				//System.out.println("Horizontal");
+				sac.sequence1 = "."+sac.sequence1;
 				sac.sequence2 = sequence2.charAt(col-1)+sac.sequence2;
 				col--;
 			}

@@ -44,7 +44,7 @@ public class Matrix {
 			for (int col = 0; col < getCols(); col++) {
 				//System.out.print(getRowCol(row,col) + " ");
 				rowCol += getRowCol(row,col).val + " ";
-				System.out.println("row: " + row + " col: " + col + " value: " + getRowCol(row,col).val);
+				//System.out.println("row: " + row + " col: " + col + " value: " + getRowCol(row,col).val);
 			}
 			//System.out.println();
 			rowCol += "\n";
