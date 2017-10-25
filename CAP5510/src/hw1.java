@@ -23,7 +23,7 @@ public class hw1 {
 			System.out.println("Input invalid.");
 			System.exit(0);
 		}
-		for (int i = 0; i < ip.queryList.size(); i++) {
+		/*for (int i = 0; i < ip.queryList.size(); i++) {
 			System.out.println(ip.queryList.get(i).header);
 			System.out.println(ip.queryList.get(i).sequence);
 		}
@@ -33,7 +33,10 @@ public class hw1 {
 			}
 			System.out.println();
 		}
-		
+		for (int i = 0; i < ip.databaseList.size(); i++) {
+			System.out.println(ip.databaseList.get(i).header);
+			System.out.println(ip.databaseList.get(i).sequence);
+		}*/
 		if (ip.alignmentMethod == 1) {
 			globalAlignment();
 		}
@@ -140,22 +143,25 @@ public class hw1 {
 		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
-				System.out.println("Using querylist: "+ i + " database list: " + j);
-				long startTime = System.currentTimeMillis();
+				//System.out.println("Using querylist: "+ i + ", database list: " + j);
 				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
+				long startTime = System.currentTimeMillis();
 				for (int col = 0; col < m.getCols(); col++) {
 					for (int row = 0; row < m.getRows(); row++) {
 						//System.out.println("Calculating row: " + row + " column: " + col);
 						globalAlignmentHelper(m, row, col, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
 					}
 				}
-				System.out.println("Matrix generated");
-				m.printMatrix();
+				//System.out.println("Matrix generated");
+				//m.printMatrix(true);
 				ScoreAlignmentSequence sac = backtrackGlobal(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence);
 				sac.score = m.getRowCol(m.getRows()-1, m.getCols()-1).val;
 				long endTime = System.currentTimeMillis();
 				sac.queryTime = endTime - startTime;
-				System.out.println("Completed matrix");
+				sac.queryID = i;
+				sac.databaseID = j;
+				sac.queryLength = ip.queryList.get(i).sequence.length();
+				//System.out.println("Completed matrix");
 				sacList.add(sac);
 			}
 		}
@@ -163,20 +169,17 @@ public class hw1 {
 		printOutput(sacList, ip.numNearestNeighbors);
 	}
 	
-	/*D(i,0) = Σ d(A(k),-), 0 <= k <= i
-	D(0,j) = Σ d(-,B(k)), 0 <= k <= j
-	D(i,j) = Max  {
-	D(i-1,j) + d(A(i),-), 
-	D(i,j-1) + d(-,B(j)),
-	D(i-1,j-1) + d(A(i),B(j))}*/
 	public static int globalAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
+		if (col == 0 && row == 0) {
+			return 0;
+		}
 		if (col == 0) {
-			matrix.setRowCol(row, col, row*ip.gapPenalty);
+			matrix.setRowCol(row, col, row*ip.gapPenalty, Direction.VERTICAL);
 			//System.out.println("row: " + row + " col: " + col + " val: " + row*ip.gapPenalty);
 			return matrix.getRowCol(row, col).val;
 		}
 		if (row == 0) {
-			matrix.setRowCol(row, col, col*ip.gapPenalty);
+			matrix.setRowCol(row, col, col*ip.gapPenalty, Direction.HORIZONTAL);
 			//System.out.println("row: " + row + " col: " + col + " val: " + col*ip.gapPenalty);
 			return matrix.getRowCol(row, col).val;
 		}
@@ -247,25 +250,28 @@ public class hw1 {
 			k = sacList.size();
 		}
 		for (int i = 0; i < k; i++) {
+			System.out.println("Query: " + sacList.get(i).queryID + ", Database: " + sacList.get(i).databaseID);
 			System.out.println("Score = " + sacList.get(i).score);
 			System.out.println("id" + idCount + " " + sacList.get(i).startPosSeq1 + " " + sacList.get(i).sequence1);
 			idCount++;
 			System.out.println("id" + idCount + " " + sacList.get(i).startPosSeq2 + " " + sacList.get(i).sequence2);
 			idCount++;
+			System.out.println("Query Length: " + sacList.get(i).queryLength);
 			System.out.println("Total run time: " + sacList.get(i).queryTime + " ms");
+			System.out.println();
 		}
 	}
 	
 	public static void localAlignment() {
 		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
-		int max = 0;
-		int r = 0;
-		int c = 0;
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
-				System.out.println("Using querylist: "+ i + " database list: " + j);
-				long startTime = System.currentTimeMillis();
+				//System.out.println("Using querylist: "+ i + " database list: " + j);
+				int max = 0;
+				int r = 0;
+				int c = 0;
 				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
+				long startTime = System.currentTimeMillis();
 				for (int col = 0; col < m.getCols(); col++) {
 					for (int row = 0; row < m.getRows(); row++) {
 						//System.out.println("Calculating row: " + row + " column: " + col);
@@ -277,14 +283,17 @@ public class hw1 {
 						}
 					}
 				}
-				System.out.println("Matrix generated");
-				System.out.println("Max: " + max + " row: " + r + " col: " + c);
-				m.printMatrix();
+				//System.out.println("Matrix generated");
+				//System.out.println("Max: " + max + " row: " + r + " col: " + c);
+				//m.printMatrix(true);
 				ScoreAlignmentSequence sac = backtrackLocal(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence, r, c);
 				sac.score = max;
 				long endTime = System.currentTimeMillis();
 				sac.queryTime = endTime - startTime;
-				System.out.println("Completed matrix");
+				sac.queryID = i;
+				sac.databaseID = j;
+				sac.queryLength = ip.queryList.get(i).sequence.length();
+				//System.out.println("Completed matrix");
 				sacList.add(sac);
 			}
 		}
@@ -327,8 +336,10 @@ public class hw1 {
 		ScoreAlignmentSequence sac = new ScoreAlignmentSequence();
 		int row = startRow;
 		int col = startCol;
-		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col));
+		//System.out.println("numRows: " + matrix.getRows() + " numCol: " + matrix.getCols());
+		//System.out.println("startRow: " + startRow + " startCol: " + startCol + " value: " + matrix.getRowCol(row, col).val);
 		while (row > 0 || col > 0) {
+			System.out.println("row: " + row + " col: " + col);
 			if (matrix.getRowCol(row, col).val == 0 || matrix.getRowCol(row, col).direction == Direction.NONE) {
 				sac.startPosSeq1 = row;
 				sac.startPosSeq2 = col;
@@ -359,14 +370,14 @@ public class hw1 {
 	
 	public static void dovetailAlignment() {
 		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
-		int max = 0;
-		int r = 0;
-		int c = 0;
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
-				System.out.println("Using querylist: "+ i + " database list: " + j);
-				long startTime = System.currentTimeMillis();
+				//System.out.println("Using querylist: "+ i + " database list: " + j);
+				int max = 0;
+				int r = 0;
+				int c = 0;
 				Matrix m = new Matrix(ip.queryList.get(i).sequence.length()+1, ip.databaseList.get(j).sequence.length()+1);
+				long startTime = System.currentTimeMillis();
 				for (int col = 0; col < m.getCols(); col++) {
 					for (int row = 0; row < m.getRows(); row++) {
 						//System.out.println("Calculating row: " + row + " column: " + col);
@@ -378,14 +389,17 @@ public class hw1 {
 						}
 					}
 				}
-				System.out.println("Matrix generated");
-				System.out.println("Max: " + max + " row: " + r + " col: " + c);
-				m.printMatrix();
+				//System.out.println("Matrix generated");
+				//System.out.println("Max: " + max + " row: " + r + " col: " + c);
+				//m.printMatrix(true);
 				ScoreAlignmentSequence sac = backtrackDovetail(m, ip.queryList.get(i).sequence, ip.databaseList.get(j).sequence, r, c);
 				sac.score = max;
 				long endTime = System.currentTimeMillis();
 				sac.queryTime = endTime - startTime;
-				System.out.println("Completed matrix");
+				sac.queryID = i;
+				sac.databaseID = j;
+				sac.queryLength = ip.queryList.get(i).sequence.length();
+				//System.out.println("Completed matrix");
 				sacList.add(sac);
 			}
 		}

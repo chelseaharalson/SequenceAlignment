@@ -38,17 +38,28 @@ public class Matrix {
 		return matrix.length;
 	}
 	
-	public void printMatrix() {
-		String rowCol = "";
+	public void printMatrix(boolean printNumbers) {
 		for (int row = 0; row < getRows(); row++) {
 			for (int col = 0; col < getCols(); col++) {
-				//System.out.print(getRowCol(row,col) + " ");
-				rowCol += getRowCol(row,col).val + " ";
-				//System.out.println("row: " + row + " col: " + col + " value: " + getRowCol(row,col).val);
+				if (printNumbers == false) {
+					if (getRowCol(row, col).direction == Direction.DIAGONAL) {
+						System.out.print("d ");
+					}
+					else if (getRowCol(row, col).direction == Direction.VERTICAL) {
+						System.out.print("v ");
+					}
+					else if (getRowCol(row, col).direction == Direction.HORIZONTAL) {
+						System.out.print("h ");
+					}
+					else if (getRowCol(row, col).direction == Direction.NONE) {
+						System.out.print("x ");
+					}
+				}
+				else {
+					System.out.print(getRowCol(row,col).val + " ");
+				}
 			}
-			//System.out.println();
-			rowCol += "\n";
+			System.out.println();
 		}
-		System.out.println(rowCol);
 	}
 }

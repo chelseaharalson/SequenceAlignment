@@ -6,6 +6,9 @@ public class ScoreAlignmentSequence implements Comparable<ScoreAlignmentSequence
 	long queryTime;
 	int startPosSeq1;
 	int startPosSeq2;
+	int queryID;
+	int databaseID;
+	int queryLength;
 
 	public ScoreAlignmentSequence() {
 		score = 0;
@@ -14,6 +17,9 @@ public class ScoreAlignmentSequence implements Comparable<ScoreAlignmentSequence
 		queryTime = 0;
 		startPosSeq1 = 0;
 		startPosSeq2 = 0;
+		queryID = 0;
+		databaseID = 0;
+		queryLength = 0;
 	}
 
 	public int compareTo(ScoreAlignmentSequence sac) {
