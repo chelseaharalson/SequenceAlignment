@@ -1,0 +1,10 @@
+Rank,Score,QueryLength,Time,AlignmentMethod
+1,19,268,8,global
+2,-6,268,26,global
+3,-14,146,10,global
+1,42,268,11,local
+2,24,146,37,local
+3,22,268,5,local
+1,41,268,9,dovetail
+2,22,146,29,dovetail
+3,19,268,2,dovetail

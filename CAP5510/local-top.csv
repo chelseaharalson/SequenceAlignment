@@ -1,0 +1,4 @@
+Rank,Score,QueryLength,Time,AlignmentMethod
+1,42,268,11,local
+2,24,146,37,local
+3,22,268,5,local

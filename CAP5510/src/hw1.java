@@ -7,7 +7,7 @@ import java.io.*;
 public class hw1 {
 	static InputParameters ip = new InputParameters();
 	
-	public static void main (String[] args) throws ParseException {
+	public static void main (String[] args) throws ParseException, FileNotFoundException, UnsupportedEncodingException {
 		
 		if (args.length > 0) {
 		    ip.alignmentMethod = Integer.parseInt(args[0]);
@@ -139,7 +139,7 @@ public class hw1 {
         return matrix;
 	}
 	
-	public static void globalAlignment() {
+	public static void globalAlignment() throws FileNotFoundException, UnsupportedEncodingException {
 		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
@@ -166,7 +166,7 @@ public class hw1 {
 			}
 		}
 		Collections.sort(sacList);
-		printOutput(sacList, ip.numNearestNeighbors);
+		printOutput(sacList, ip.numNearestNeighbors, 1);
 	}
 	
 	public static int globalAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
@@ -244,12 +244,26 @@ public class hw1 {
 		return sac;
 	}
 	
-	public static void printOutput(ArrayList<ScoreAlignmentSequence> sacList, int k) {
+	public static void printOutput(ArrayList<ScoreAlignmentSequence> sacList, int k, int alignMethod) throws FileNotFoundException, UnsupportedEncodingException {
 		int idCount = 1;
 		if (k > sacList.size()) {
 			k = sacList.size();
 		}
-		for (int i = 0; i < k; i++) {
+		String fileName = "";
+		if (alignMethod == 1) {
+			fileName = "global-";
+		}
+		else if (alignMethod == 2) {
+			fileName = "local-";
+		}
+		else if (alignMethod == 3) {
+			fileName = "dovetail-";
+		}
+		PrintWriter writer = new PrintWriter(fileName+"all.csv", "UTF-8");
+		writer.println("Score,QueryLength,Time");
+		PrintWriter writerTop = new PrintWriter(fileName+"top.csv", "UTF-8");
+		writerTop.println("Rank,Score,QueryLength,Time,AlignmentMethod");
+		for (int i = 0; i < sacList.size(); i++) {
 			System.out.println("Query: " + sacList.get(i).queryID + ", Database: " + sacList.get(i).databaseID);
 			System.out.println("Score = " + sacList.get(i).score);
 			System.out.println("id" + idCount + " " + sacList.get(i).startPosSeq1 + " " + sacList.get(i).sequence1);
@@ -259,10 +273,26 @@ public class hw1 {
 			System.out.println("Query Length: " + sacList.get(i).queryLength);
 			System.out.println("Total run time: " + sacList.get(i).queryTime + " ms");
 			System.out.println();
+			
+			writer.println(sacList.get(i).score + "," + sacList.get(i).queryLength + "," + sacList.get(i).queryTime);
+			
+			if (i < k) {
+				if (alignMethod == 1) {
+					writerTop.println(i+1 + "," + sacList.get(i).score + "," + sacList.get(i).queryLength + "," + sacList.get(i).queryTime + ",global");
+				}
+				else if (alignMethod == 2) {
+					writerTop.println(i+1 + "," + sacList.get(i).score + "," + sacList.get(i).queryLength + "," + sacList.get(i).queryTime + ",local");
+				}
+				else if (alignMethod == 3) {
+					writerTop.println(i+1 + "," + sacList.get(i).score + "," + sacList.get(i).queryLength + "," + sacList.get(i).queryTime + ",dovetail");
+				}
+			}
 		}
+		writer.close();
+		writerTop.close();
 	}
 	
-	public static void localAlignment() {
+	public static void localAlignment() throws FileNotFoundException, UnsupportedEncodingException {
 		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
@@ -298,7 +328,7 @@ public class hw1 {
 			}
 		}
 		Collections.sort(sacList);
-		printOutput(sacList, ip.numNearestNeighbors);
+		printOutput(sacList, ip.numNearestNeighbors, 2);
 	}
 	
 	public static int localAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
@@ -368,7 +398,7 @@ public class hw1 {
 		return sac;
 	}
 	
-	public static void dovetailAlignment() {
+	public static void dovetailAlignment() throws FileNotFoundException, UnsupportedEncodingException {
 		ArrayList<ScoreAlignmentSequence> sacList = new ArrayList<ScoreAlignmentSequence>();
 		for (int i = 0; i < ip.queryList.size(); i++) {
 			for (int j = 0; j < ip.databaseList.size(); j++) {
@@ -404,7 +434,7 @@ public class hw1 {
 			}
 		}
 		Collections.sort(sacList);
-		printOutput(sacList, ip.numNearestNeighbors);
+		printOutput(sacList, ip.numNearestNeighbors, 3);
 	}
 	
 	public static int dovetailAlignmentHelper(Matrix matrix, int row, int col, String query, String database) {
